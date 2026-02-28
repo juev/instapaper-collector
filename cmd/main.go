@@ -42,8 +42,13 @@ func run() error {
 	}
 
 	data := collector.New(dataFile)
-	if err := data.Update(rssURL); err != nil {
+	added, err := data.Update(rssURL)
+	if err != nil {
 		return err
+	}
+
+	if !added {
+		return nil
 	}
 
 	return templates.TemplateFile(data, userName, weekOffset, ".")

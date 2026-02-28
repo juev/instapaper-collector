@@ -145,7 +145,7 @@ func TestUpdate_WithHTTPServer(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "data.json")
 	c := New(path)
 
-	if err := c.Update(server.URL); err != nil {
+	if _, err := c.Update(server.URL); err != nil {
 		t.Fatalf("Update() error: %v", err)
 	}
 
@@ -209,14 +209,14 @@ func TestUpdate_Deduplication(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "data.json")
 	c := New(path)
 
-	if err := c.Update(server.URL); err != nil {
+	if _, err := c.Update(server.URL); err != nil {
 		t.Fatalf("first Update() error: %v", err)
 	}
 
 	firstCount := len(c.Items)
 
 	c2 := New(path)
-	if err := c2.Update(server.URL); err != nil {
+	if _, err := c2.Update(server.URL); err != nil {
 		t.Fatalf("second Update() error: %v", err)
 	}
 
@@ -226,6 +226,39 @@ func TestUpdate_Deduplication(t *testing.T) {
 
 	if c2.Updated != c.Updated {
 		t.Error("Updated timestamp should not change when no new items added")
+	}
+}
+
+func TestUpdate_ReturnsFalseWhenNoNewLinks(t *testing.T) {
+	feedData, err := os.ReadFile("testdata/feed.xml")
+	if err != nil {
+		t.Fatalf("cannot read fixture: %v", err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/xml")
+		_, _ = w.Write(feedData)
+	}))
+	defer server.Close()
+
+	path := filepath.Join(t.TempDir(), "data.json")
+	c := New(path)
+
+	added, err := c.Update(server.URL)
+	if err != nil {
+		t.Fatalf("first Update() error: %v", err)
+	}
+	if !added {
+		t.Error("first Update() should return true (new links added)")
+	}
+
+	c2 := New(path)
+	added, err = c2.Update(server.URL)
+	if err != nil {
+		t.Fatalf("second Update() error: %v", err)
+	}
+	if added {
+		t.Error("second Update() should return false (no new links)")
 	}
 }
 

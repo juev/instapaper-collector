@@ -95,19 +95,19 @@ func (c *Collector) Write() error {
 	return nil
 }
 
-func (c *Collector) Update(rssURL string) error {
+func (c *Collector) Update(rssURL string) (bool, error) {
 	if err := c.Read(); err != nil {
-		return err
+		return false, err
 	}
 
 	body, err := FetchRSS(rssURL)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	items, err := ParseRSS(body)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	added := false
@@ -120,7 +120,7 @@ func (c *Collector) Update(rssURL string) error {
 	}
 
 	if !added {
-		return nil
+		return false, nil
 	}
 
 	slices.SortFunc(c.Items, func(a, b Item) int {
@@ -129,7 +129,7 @@ func (c *Collector) Update(rssURL string) error {
 
 	c.Updated = time.Now().UTC().Format(time.RFC3339)
 
-	return c.Write()
+	return true, c.Write()
 }
 
 func FetchRSS(rawURL string) ([]byte, error) {
