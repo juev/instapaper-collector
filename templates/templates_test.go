@@ -40,7 +40,7 @@ func TestTemplateFile_BasicGeneration(t *testing.T) {
 	if !strings.Contains(content, "First desc") {
 		t.Error("README.md should contain description")
 	}
-	if !strings.Contains(content, "2/2 items)") {
+	if !strings.Contains(content, "2/2 total items)") {
 		t.Error("README.md should show last week count and total count")
 	}
 }
@@ -108,7 +108,7 @@ func TestTemplateFile_ReadmeShowsOnlyLastWeek(t *testing.T) {
 	if !strings.Contains(content, "Recent Article") {
 		t.Error("README.md should contain items from the last week")
 	}
-	if !strings.Contains(content, "/2 items)") {
+	if !strings.Contains(content, "/2 total items)") {
 		t.Error("README.md should show total count of all items")
 	}
 }

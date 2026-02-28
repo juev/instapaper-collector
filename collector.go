@@ -57,7 +57,7 @@ func (c *Collector) Read() error {
 		return fmt.Errorf("invalid JSON in %q: %w", c.fileName, err)
 	}
 
-	filtered := c.Items[:0]
+	filtered := make([]Item, 0, len(c.Items))
 	for _, item := range c.Items {
 		if item.Link == "" {
 			continue
