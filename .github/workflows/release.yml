@@ -27,7 +27,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Prepare Docker build
-        run: cp dist/instapaper-collector-linux-amd64 instapaper-collector
+        run: cp dist/instapaper-collector_linux_amd64_v1/instapaper-collector instapaper-collector
 
       - uses: docker/setup-buildx-action@v3
 
