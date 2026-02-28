@@ -22,6 +22,9 @@ type Data struct {
 	Count    int
 }
 
+// TemplateFile generates weekly markdown files and README.md.
+// weekOffset shifts the ISO week boundary BACK from Monday 00:00 by the given hours
+// (e.g. 47 = Saturday 01:00, 0 = standard Monday).
 func TemplateFile(s *collector.Collector, userName string, weekOffset int, baseDir string) error {
 	tmpl, err := template.New("links").Parse(templateString)
 	if err != nil {
@@ -61,7 +64,8 @@ func TemplateFile(s *collector.Collector, userName string, weekOffset int, baseD
 	}
 
 	r.Count = len(s.Items)
-	return writeTemplate(&r, "", weekItems, tmpl, baseDir)
+	allItems := &collector.Collector{Title: s.Title, Items: s.Items}
+	return writeTemplate(&r, "", allItems, tmpl, baseDir)
 }
 
 func writeTemplate(r *Data, weekNumber string, weekItems *collector.Collector, tmpl *template.Template, baseDir string) error {

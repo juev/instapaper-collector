@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+const maxResponseSize = 10 << 20 // 10MB
+
+var httpClient = &http.Client{Timeout: 30 * time.Second}
+
 type Collector struct {
 	Title    string `json:"title"`
 	Updated  string `json:"updated"`
@@ -45,7 +49,7 @@ func (c *Collector) Read() error {
 	}
 
 	if !json.Valid(data) {
-		return nil
+		return fmt.Errorf("invalid JSON in %q", c.fileName)
 	}
 
 	if err := json.Unmarshal(data, c); err != nil {
@@ -91,11 +95,17 @@ func (c *Collector) Update(rssURL string) error {
 		return err
 	}
 
+	added := false
 	for _, item := range items {
 		if c.notContainsLink(item.Link) {
 			c.Items = append(c.Items, item)
 			c.links[item.Link] = struct{}{}
+			added = true
 		}
+	}
+
+	if !added {
+		return nil
 	}
 
 	slices.SortFunc(c.Items, func(a, b Item) int {
@@ -108,7 +118,7 @@ func (c *Collector) Update(rssURL string) error {
 }
 
 func FetchRSS(url string) ([]byte, error) {
-	resp, err := http.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch RSS: %w", err)
 	}
@@ -118,7 +128,7 @@ func FetchRSS(url string) ([]byte, error) {
 		return nil, fmt.Errorf("RSS feed returned status %d", resp.StatusCode)
 	}
 
-	return io.ReadAll(resp.Body)
+	return io.ReadAll(io.LimitReader(resp.Body, maxResponseSize))
 }
 
 func (c *Collector) notContainsLink(link string) bool {

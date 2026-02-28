@@ -54,6 +54,10 @@ func parsePubDate(s string) (string, error) {
 	formats := []string{
 		time.RFC1123,
 		time.RFC1123Z,
+		time.RFC822,
+		time.RFC822Z,
+		time.RFC850,
+		time.RFC3339,
 	}
 
 	for _, format := range formats {

@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -69,6 +70,18 @@ func TestWriteRead_RoundTrip(t *testing.T) {
 	}
 }
 
+func TestRead_InvalidJSON(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "data.json")
+	if err := os.WriteFile(path, []byte("{invalid json"), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	c := New(path)
+	if err := c.Read(); err == nil {
+		t.Error("Read() should return error for invalid JSON")
+	}
+}
+
 func TestDeduplication(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "data.json")
 	c := New(path)
@@ -112,7 +125,7 @@ func TestWrite_JSONFormat(t *testing.T) {
 	}
 
 	content := string(data)
-	if contains(content, "\\u0026") {
+	if strings.Contains(content, "\\u0026") {
 		t.Error("JSON should not escape HTML entities (SetEscapeHTML(false))")
 	}
 }
@@ -182,17 +195,9 @@ func TestUpdate_Deduplication(t *testing.T) {
 	if len(c2.Items) != firstCount {
 		t.Errorf("expected %d items after second Update (no duplicates), got %d", firstCount, len(c2.Items))
 	}
-}
 
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && searchString(s, substr)
-}
-
-func searchString(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
+	if c2.Updated != c.Updated {
+		t.Error("Updated timestamp should not change when no new items added")
 	}
-	return false
 }
+

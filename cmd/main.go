@@ -9,8 +9,6 @@ import (
 	"github.com/juev/instapaper-collector/templates"
 )
 
-const storageFile = "data.json"
-
 func main() {
 	if err := run(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
@@ -24,9 +22,14 @@ func run() error {
 		return fmt.Errorf("RSS_URL env variable is required")
 	}
 
-	userName := os.Getenv("USERNAME")
+	userName := os.Getenv("GITHUB_USERNAME")
 	if userName == "" {
 		userName = "juev"
+	}
+
+	dataFile := os.Getenv("DATA_FILE")
+	if dataFile == "" {
+		dataFile = "data.json"
 	}
 
 	weekOffset := 47
@@ -38,7 +41,7 @@ func run() error {
 		weekOffset = n
 	}
 
-	data := collector.New(storageFile)
+	data := collector.New(dataFile)
 	if err := data.Update(rssURL); err != nil {
 		return err
 	}
