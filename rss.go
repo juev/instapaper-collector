@@ -35,7 +35,7 @@ func ParseRSS(data []byte) ([]Item, error) {
 			continue
 		}
 
-		title := ri.Title
+		title := strings.TrimSpace(ri.Title)
 		if title == "" {
 			title = "Untitled"
 		}
