@@ -57,9 +57,15 @@ func (c *Collector) Read() error {
 		return fmt.Errorf("invalid JSON in %q: %w", c.fileName, err)
 	}
 
+	filtered := c.Items[:0]
 	for _, item := range c.Items {
+		if item.Link == "" {
+			continue
+		}
+		filtered = append(filtered, item)
 		c.links[item.Link] = struct{}{}
 	}
+	c.Items = filtered
 
 	return nil
 }

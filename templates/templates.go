@@ -64,8 +64,8 @@ func TemplateFile(s *collector.Collector, userName string, weekOffset int, baseD
 	}
 
 	r.Count = len(s.Items)
-	allItems := &collector.Collector{Title: s.Title, Items: s.Items}
-	return writeTemplate(&r, "", allItems, tmpl, baseDir)
+	lastWeek := &collector.Collector{Title: s.Title, Items: weekItems.Items}
+	return writeTemplate(&r, "", lastWeek, tmpl, baseDir)
 }
 
 func writeTemplate(r *Data, weekNumber string, weekItems *collector.Collector, tmpl *template.Template, baseDir string) error {

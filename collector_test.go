@@ -166,6 +166,34 @@ func TestUpdate_WithHTTPServer(t *testing.T) {
 	}
 }
 
+func TestRead_FiltersEmptyLinks(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "data.json")
+	data := `{
+		"title": "Test",
+		"updated": "2025-02-28T10:00:00Z",
+		"items": [
+			{"title": "Valid", "link": "https://example.com/valid", "published": "2025-02-28T09:00:00Z"},
+			{"title": "Untitled", "published": "1970-01-01T00:00:00Z"},
+			{"title": "Empty Link", "link": "", "published": "2025-02-28T08:00:00Z"}
+		]
+	}`
+	if err := os.WriteFile(path, []byte(data), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	c := New(path)
+	if err := c.Read(); err != nil {
+		t.Fatalf("Read() error: %v", err)
+	}
+
+	if len(c.Items) != 1 {
+		t.Fatalf("expected 1 item (only valid links), got %d", len(c.Items))
+	}
+	if c.Items[0].Title != "Valid" {
+		t.Errorf("expected remaining item to be 'Valid', got %q", c.Items[0].Title)
+	}
+}
+
 func TestUpdate_Deduplication(t *testing.T) {
 	feedData, err := os.ReadFile("testdata/feed.xml")
 	if err != nil {

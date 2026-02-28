@@ -40,8 +40,8 @@ func TestTemplateFile_BasicGeneration(t *testing.T) {
 	if !strings.Contains(content, "First desc") {
 		t.Error("README.md should contain description")
 	}
-	if !strings.Contains(content, "/2 items)") {
-		t.Error("README.md should show total count")
+	if !strings.Contains(content, "2/2 items)") {
+		t.Error("README.md should show last week count and total count")
 	}
 }
 
@@ -77,6 +77,39 @@ func TestTemplateFile_MultipleWeeks(t *testing.T) {
 	}
 	if !readmeExists {
 		t.Error("README.md should exist")
+	}
+}
+
+func TestTemplateFile_ReadmeShowsOnlyLastWeek(t *testing.T) {
+	dir := t.TempDir()
+
+	c := &collector.Collector{
+		Title:   "Instapaper: Unread",
+		Updated: "2025-03-10T10:00:00Z",
+		Items: []collector.Item{
+			{Title: "Old Article", Link: "https://example.com/old", Published: "2025-02-24T10:00:00Z"},
+			{Title: "Recent Article", Link: "https://example.com/recent", Published: "2025-03-03T10:00:00Z"},
+		},
+	}
+
+	if err := TemplateFile(c, "juev", 47, dir); err != nil {
+		t.Fatalf("TemplateFile() error: %v", err)
+	}
+
+	readme, err := os.ReadFile(filepath.Join(dir, "README.md"))
+	if err != nil {
+		t.Fatalf("README.md not created: %v", err)
+	}
+
+	content := string(readme)
+	if strings.Contains(content, "Old Article") {
+		t.Error("README.md should NOT contain items from previous weeks")
+	}
+	if !strings.Contains(content, "Recent Article") {
+		t.Error("README.md should contain items from the last week")
+	}
+	if !strings.Contains(content, "/2 items)") {
+		t.Error("README.md should show total count of all items")
 	}
 }
 
