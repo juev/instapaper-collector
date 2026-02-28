@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -60,6 +61,7 @@ func (c *Collector) Read() error {
 	filtered := make([]Item, 0, len(c.Items))
 	for _, item := range c.Items {
 		if item.Link == "" {
+			log.Printf("skipping item with empty link: %q", item.Title)
 			continue
 		}
 		filtered = append(filtered, item)

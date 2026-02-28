@@ -33,7 +33,8 @@ func TemplateFile(s *collector.Collector, userName string, weekOffset int, baseD
 		return err
 	}
 
-	slices.SortFunc(s.Items, func(a, b collector.Item) int {
+	items := slices.Clone(s.Items)
+	slices.SortFunc(items, func(a, b collector.Item) int {
 		return cmp.Compare(a.Published, b.Published)
 	})
 
@@ -42,7 +43,7 @@ func TemplateFile(s *collector.Collector, userName string, weekOffset int, baseD
 	weekItems := &collector.Collector{Title: s.Title}
 	offset := time.Duration(weekOffset) * time.Hour
 
-	for _, item := range s.Items {
+	for _, item := range items {
 		t, err := time.Parse(time.RFC3339, item.Published)
 		if err != nil {
 			return err
@@ -69,9 +70,9 @@ func TemplateFile(s *collector.Collector, userName string, weekOffset int, baseD
 		}
 	}
 
-	r.Count = len(s.Items)
-	lastWeek := &collector.Collector{Title: s.Title, Items: weekItems.Items}
-	return writeTemplate(&r, "", lastWeek, tmpl, baseDir)
+	r.Count = len(items)
+	latestWeek := &collector.Collector{Title: s.Title, Items: weekItems.Items}
+	return writeTemplate(&r, "", latestWeek, tmpl, baseDir)
 }
 
 func writeTemplate(r *Data, weekNumber string, weekItems *collector.Collector, tmpl *template.Template, baseDir string) error {
