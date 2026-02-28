@@ -73,6 +73,38 @@ func TestParseRSS_NoTitle(t *testing.T) {
 	}
 }
 
+func TestParseRSS_SkipsEmptyLink(t *testing.T) {
+	data := []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+<title>Test</title>
+<item>
+<title>Has Link</title>
+<link>https://example.com/one</link>
+<pubDate>Fri, 28 Feb 2025 10:00:00 GMT</pubDate>
+</item>
+<item>
+<title>No Link</title>
+<link></link>
+<pubDate>Fri, 28 Feb 2025 09:00:00 GMT</pubDate>
+</item>
+</channel>
+</rss>`)
+
+	items, err := ParseRSS(data)
+	if err != nil {
+		t.Fatalf("ParseRSS() error: %v", err)
+	}
+
+	if len(items) != 1 {
+		t.Fatalf("expected 1 item (empty link skipped), got %d", len(items))
+	}
+
+	if items[0].Title != "Has Link" {
+		t.Errorf("items[0].Title: got %q, want %q", items[0].Title, "Has Link")
+	}
+}
+
 func TestParseRSS_PubDateConversion(t *testing.T) {
 	data, err := os.ReadFile("testdata/feed.xml")
 	if err != nil {

@@ -29,6 +29,10 @@ func ParseRSS(data []byte) ([]Item, error) {
 
 	items := make([]Item, 0, len(feed.Channel.Items))
 	for _, ri := range feed.Channel.Items {
+		if ri.Link == "" {
+			continue
+		}
+
 		title := ri.Title
 		if title == "" {
 			title = "Untitled"

@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"cmp"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"slices"
 	"time"
 )
@@ -40,7 +42,10 @@ func New(fileName string) *Collector {
 
 func (c *Collector) Read() error {
 	if _, err := os.Stat(c.fileName); err != nil {
-		return nil
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return fmt.Errorf("cannot stat file %q: %w", c.fileName, err)
 	}
 
 	data, err := os.ReadFile(c.fileName)
@@ -48,12 +53,8 @@ func (c *Collector) Read() error {
 		return fmt.Errorf("cannot read file %q: %w", c.fileName, err)
 	}
 
-	if !json.Valid(data) {
-		return fmt.Errorf("invalid JSON in %q", c.fileName)
-	}
-
 	if err := json.Unmarshal(data, c); err != nil {
-		return err
+		return fmt.Errorf("invalid JSON in %q: %w", c.fileName, err)
 	}
 
 	for _, item := range c.Items {
@@ -73,8 +74,14 @@ func (c *Collector) Write() error {
 		return err
 	}
 
-	if err := os.WriteFile(c.fileName, buf.Bytes(), 0600); err != nil {
-		return fmt.Errorf("cannot create file %q: %w", c.fileName, err)
+	tmp := c.fileName + ".tmp"
+	if err := os.WriteFile(tmp, buf.Bytes(), 0600); err != nil {
+		return fmt.Errorf("cannot write temp file %q: %w", tmp, err)
+	}
+
+	if err := os.Rename(tmp, c.fileName); err != nil {
+		_ = os.Remove(tmp)
+		return fmt.Errorf("cannot rename %q to %q: %w", tmp, c.fileName, err)
 	}
 
 	return nil
@@ -97,7 +104,7 @@ func (c *Collector) Update(rssURL string) error {
 
 	added := false
 	for _, item := range items {
-		if c.notContainsLink(item.Link) {
+		if c.isNewLink(item.Link) {
 			c.Items = append(c.Items, item)
 			c.links[item.Link] = struct{}{}
 			added = true
@@ -117,8 +124,8 @@ func (c *Collector) Update(rssURL string) error {
 	return c.Write()
 }
 
-func FetchRSS(url string) ([]byte, error) {
-	resp, err := httpClient.Get(url)
+func FetchRSS(rawURL string) ([]byte, error) {
+	resp, err := httpClient.Get(rawURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch RSS: %w", err)
 	}
@@ -131,7 +138,16 @@ func FetchRSS(url string) ([]byte, error) {
 	return io.ReadAll(io.LimitReader(resp.Body, maxResponseSize))
 }
 
-func (c *Collector) notContainsLink(link string) bool {
+func (c *Collector) isNewLink(link string) bool {
 	_, ok := c.links[link]
 	return !ok
+}
+
+// AbsFileName returns the absolute path of the data file (for testing).
+func (c *Collector) AbsFileName() string {
+	abs, err := filepath.Abs(c.fileName)
+	if err != nil {
+		return c.fileName
+	}
+	return abs
 }

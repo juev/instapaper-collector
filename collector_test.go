@@ -99,11 +99,11 @@ func TestDeduplication(t *testing.T) {
 		t.Fatalf("Read() error: %v", err)
 	}
 
-	if !c2.notContainsLink("https://example.com/new") {
-		t.Error("notContainsLink should return true for new link")
+	if !c2.isNewLink("https://example.com/new") {
+		t.Error("isNewLink should return true for new link")
 	}
-	if c2.notContainsLink("https://example.com/existing") {
-		t.Error("notContainsLink should return false for existing link")
+	if c2.isNewLink("https://example.com/existing") {
+		t.Error("isNewLink should return false for existing link")
 	}
 }
 

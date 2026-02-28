@@ -43,7 +43,7 @@ func TemplateFile(s *collector.Collector, userName string, weekOffset int, baseD
 		}
 
 		year, week := t.Add(offset).ISOWeek()
-		currentWeek = fmt.Sprintf("%d-%d", year, week)
+		currentWeek = fmt.Sprintf("%d-%02d", year, week)
 
 		if weekNumber != currentWeek {
 			if weekNumber != "" {

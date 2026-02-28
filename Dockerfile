@@ -6,7 +6,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -o /instapaper-collector ./cmd/main.go
 
-FROM alpine:latest
+FROM alpine:3.21
 
 RUN apk add --no-cache git && \
     adduser -D runner -u 1001
@@ -14,3 +14,5 @@ RUN apk add --no-cache git && \
 COPY --from=builder /instapaper-collector /usr/local/bin/instapaper-collector
 
 USER runner
+
+ENTRYPOINT ["/usr/local/bin/instapaper-collector"]
