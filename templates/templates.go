@@ -1,10 +1,12 @@
 package templates
 
 import (
+	"cmp"
 	_ "embed"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"text/template"
 	"time"
@@ -30,6 +32,10 @@ func TemplateFile(s *collector.Collector, userName string, weekOffset int, baseD
 	if err != nil {
 		return err
 	}
+
+	slices.SortFunc(s.Items, func(a, b collector.Item) int {
+		return cmp.Compare(a.Published, b.Published)
+	})
 
 	var weekNumber, currentWeek string
 	r := Data{UserName: userName}
