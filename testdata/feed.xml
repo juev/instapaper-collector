@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+<title>Instapaper: Unread</title>
+<link>https://instapaper.com/u</link>
+<description></description>
+
+<item>
+<guid>https://example.com/article-one</guid>
+<title>Article One</title>
+<link>https://example.com/article-one</link>
+<description>First article summary text.</description>
+<pubDate>Fri, 28 Feb 2025 10:00:00 GMT</pubDate>
+</item>
+
+<item>
+<guid>https://example.com/article-two</guid>
+<title>Article Two</title>
+<link>https://example.com/article-two</link>
+<description>Second article summary text.</description>
+<pubDate>Fri, 28 Feb 2025 09:00:00 GMT</pubDate>
+</item>
+
+<item>
+<guid>https://example.com/article-three</guid>
+<title></title>
+<link>https://example.com/article-three</link>
+<description>Third article has no title.</description>
+<pubDate>Thu, 27 Feb 2025 15:30:00 GMT</pubDate>
+</item>
+
+</channel>
+</rss>
