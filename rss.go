@@ -3,6 +3,7 @@ package collector
 import (
 	"encoding/xml"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -29,7 +30,8 @@ func ParseRSS(data []byte) ([]Item, error) {
 
 	items := make([]Item, 0, len(feed.Channel.Items))
 	for _, ri := range feed.Channel.Items {
-		if ri.Link == "" {
+		link := strings.TrimSpace(ri.Link)
+		if link == "" {
 			continue
 		}
 
@@ -45,7 +47,7 @@ func ParseRSS(data []byte) ([]Item, error) {
 
 		items = append(items, Item{
 			Title:       title,
-			Link:        ri.Link,
+			Link:        link,
 			Description: ri.Description,
 			Published:   published,
 		})
